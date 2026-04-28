@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deutsch Schatzsuche - Multiplayer</title>
+    <style>
+        :root {
+            --primary: #4338ca;
+            --primary-light: #e0e7ff;
+            --secondary: #059669;
+            --secondary-light: #d1fae5;
+            --tertiary: #d97706;
+            --tertiary-light: #ffedd5;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-900: #0f172a;
+            --highlight-bg: #fff7ed;
+            --highlight-border: #fb923c;
+            --error-red: #dc2626;
+            --warning-orange: #ea580c;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--slate-50);
+            color: var(--slate-900);
+            line-height: 1.3;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5px 15px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        /* Setup Screen */
+        #setup-screen {
+            position: fixed;
+            inset: 0;
+            background-color: var(--primary);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .setup-card h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; font-weight: bold; color: var(--slate-500); text-transform: uppercase; margin-bottom: 4px; }
+        
+        .player-count-btns { display: flex; gap: 8px; margin-bottom: 15px; }
+        .btn-toggle {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--slate-200);
+            background: white;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-toggle.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid var(--slate-200);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 12px -3px rgba(67, 56, 202, 0.2);
+        }
+
+        /* Top Bar Info */
+        .game-info {
+            display: grid;
+            grid-template-columns: 2.5fr 1fr;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid var(--slate-200);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .mic-circle {
+            width: 44px;
+            height: 44px;
+            background: var(--slate-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .mic-circle:hover { background: var(--slate-200); }
+
+        .turn-card {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 14px;
+            border-bottom: 6px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .speech-interaction {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-grow: 1;
+        }
+
+        .transcription-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        #transcribed-text {
+            flex-grow: 1;
+            padding: 5px 10px;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: var(--slate-50);
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: var(--slate-900);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-check {
+            padding: 6px 12px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .btn-retry {
+            padding: 6px 12px;
+            background-color: var(--slate-200);
+            color: var(--slate-700);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-check:hover:not(:disabled) { background-color: #047857; }
+        .btn-check:disabled { background-color: var(--slate-200); cursor: not-allowed; }
+
+        /* Grid Table */
+        .table-container { overflow-x: auto; padding-bottom: 5px; }
+        table {
+            width: 100%;
+            border-spacing: 4px;
+            border-collapse: separate;
+            min-width: 800px;
+        }
+
+        th { padding: 6px; color: var(--slate-600); text-transform: uppercase; font-size: 0.6rem; letter-spacing: 0.05em; transition: 0.3s; }
+        .verb-head { background: var(--slate-100); border-radius: 8px 8px 0 0; }
+        .verb-sub { display: block; font-size: 8px; font-style: italic; opacity: 0.6; margin-bottom: 1px; }
+
+        td {
+            background: white;
+            border-radius: 10px;
+            height: 48px;
+            text-align: center;
+            border: 2px solid var(--slate-100);
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            padding: 2px;
+        }
+        td:hover:not(.dug):not(.locked) { border-color: var(--primary); transform: translateY(-1px); }
+
+        .row-head { cursor: default; text-align: left; padding: 5px 12px; background: none; border: none; transition: 0.3s; }
+        
+        .pronoun-label { display: block; font-size: 1rem; font-weight: 900; color: var(--primary); line-height: 1.1; }
+        
+        .item-label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: var(--slate-700); 
+            letter-spacing: 0.02em; 
+            font-weight: 700;
+            text-transform: capitalize;
+            line-height: 1.1;
+        }
+
+        /* Highlight Styles */
+        .active-selection {
+            border-color: var(--highlight-border) !important;
+            background-color: var(--highlight-bg) !important;
+            box-shadow: 0 0 8px rgba(251, 146, 60, 0.3);
+            z-index: 10;
+        }
+        .header-highlight {
+            color: var(--highlight-border) !important;
+            background-color: var(--highlight-bg) !important;
+            font-weight: 900 !important;
+            transform: scale(1.03);
+        }
+
+        /* Locked Tile Style */
+        .locked {
+            background-color: var(--slate-200) !important;
+            border-color: var(--slate-400) !important;
+            cursor: not-allowed !important;
+            opacity: 0.6;
+        }
+
+        /* Player Colours */
+        .player-0 { border-color: var(--primary) !important; background-color: var(--primary-light) !important; }
+        .player-1 { border-color: var(--secondary) !important; background-color: var(--secondary-light) !important; }
+        .player-2 { border-color: var(--tertiary) !important; background-color: var(--tertiary-light) !important; }
+
+        .player-0-text { color: var(--primary); }
+        .player-1-text { color: var(--secondary); }
+        .player-2-text { color: var(--tertiary); }
+
+        /* Animations */
+        @keyframes pulse-red { 
+            0% { background-color: #fee2e2; border: 2px solid #ef4444; } 
+            100% { background-color: #fca5a5; border: 2px solid #b91c1c; } 
+        }
+        .listening { animation: pulse-red 0.8s infinite alternate; }
+
+        .shake { animation: shake-kf 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-kf {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        }
+
+        .treasure { 
+            background: #fef3c7 !important; 
+            border-color: #d97706 !important; 
+            font-size: 1.4rem;
+            animation: bounce 0.5s infinite alternate;
+        }
+        @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        /* Modals */
+        #win-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-card {
+            background: white;
+            padding: 30px;
+            border-radius: 32px;
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen">
+        <div class="setup-card">
+            <h2>Game Setup</h2>
+            <div class="input-group">
+                <label>Number of Students</label>
+                <div class="player-count-btns">
+                    <button id="btn-2" class="btn-toggle active" onclick="setCount(2)">2 Players</button>
+                    <button id="btn-3" class="btn-toggle" onclick="setCount(3)">3 Players</button>
+                </div>
+            </div>
+            <div id="name-fields"></div>
+            <button class="btn-primary" style="margin-top:10px" onclick="begin()">Start Game</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>💎 Deutsch Schatzsuche</h1>
+            <p style="color:var(--slate-600); margin-top: 2px; font-size: 0.85rem;">Form the <strong>Perfect Tense</strong> based on the highlighted cells!</p>
+        </header>
+
+        <div class="game-info">
+            <div class="status-card">
+                <div id="mic-box" class="mic-circle" onclick="toggleMicManually()">
+                    <svg id="mic-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </div>
+                <div class="speech-interaction">
+                    <div id="instruction" style="font-weight:900; font-size:0.95rem; color: var(--primary);">Pick a square to dig</div>
+                    <div class="transcription-box">
+                        <div id="transcribed-text">...</div>
+                        <div class="button-group">
+                            <button id="retry-btn" class="btn-retry" onclick="retryRecording()" disabled>Retry</button>
+                            <button id="check-btn" class="btn-check" onclick="checkSentence()" disabled>Check</button>
+                        </div>
+                    </div>
+                    <div id="feedback" style="font-size:0.75rem; color:var(--slate-500); font-style: italic;">Select a square to start recording.</div>
+                </div>
+            </div>
+
+            <div id="turn-display" class="turn-card">
+                <label style="margin-bottom: 2px;">Turn</label>
+                <div id="p-name" style="font-size: 1.1rem; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Student Name</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr id="verb-row">
+                        <th style="width:140px">Person & Item</th>
+                        <th class="verb-head" id="verb-0"><span class="verb-sub">to wear</span>anhaben</th>
+                        <th class="verb-head" id="verb-1"><span class="verb-sub">to put on</span>anziehen</th>
+                        <th class="verb-head" id="verb-2"><span class="verb-sub">to take off</span>ausziehen</th>
+                        <th class="verb-head" id="verb-3"><span class="verb-sub">to shop for</span>einkaufen</th>
+                        <th class="verb-head" id="verb-4"><span class="verb-sub">to borrow</span>ausleihen</th>
+                        <th class="verb-head" id="verb-5"><span class="verb-sub">to pack</span>einpacken</th>
+                    </tr>
+                </thead>
+                <tbody id="board"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal">
+        <div class="modal-card">
+            <div style="font-size:3rem; margin-bottom:10px">💎</div>
+            <h2 id="win-msg">Player Wins!</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 20px;">You found the treasure with perfect grammar.</p>
+            <button class="btn-primary" onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const pronouns = [
+            { t: 'Ich', i: 'die Hose' },
+            { t: 'Du', i: 'den Pullover' },
+            { t: 'Er', i: 'den Anzug' },
+            { t: 'Sie', i: 'den Rock' },
+            { t: 'Es', i: 'das Kleid' },
+            { t: 'Wir', i: 'die Bluse' },
+            { t: 'Ihr', i: 'die Schuhe' },
+            { t: 'Sie (they)', i: 'das Hemd' }
+        ];
+
+        const verbs = [
+            { inf: 'anhaben', p: 'angehabt' },
+            { inf: 'anziehen', p: 'angezogen' },
+            { inf: 'ausziehen', p: 'ausgezogen' },
+            { inf: 'einkaufen', p: 'eingekauft' },
+            { inf: 'ausleihen', p: 'ausgeliehen' },
+            { inf: 'einpacken', p: 'eingepackt' }
+        ];
+
+        // Maps for English translation
+        const englishPronouns = {
+            'Ich': 'I',
+            'Du': 'you',
+            'Er': 'he',
+            'Sie': 'she',
+            'Es': 'it',
+            'Wir': 'we',
+            'Ihr': 'you',
+            'Sie (they)': 'they'
+        };
+
+        const englishItems = {
+            'die Hose': 'the trousers',
+            'den Pullover': 'the jumper',
+            'den Anzug': 'the suit',
+            'den Rock': 'the skirt',
+            'das Kleid': 'the dress',
+            'die Bluse': 'the blouse',
+            'die Schuhe': 'the shoes',
+            'das Hemd': 'the shirt'
+        };
+
+        const englishVerbs = {
+            'anhaben': 'worn',
+            'anziehen': 'put on',
+            'ausziehen': 'taken off',
+            'einkaufen': 'shopped for',
+            'ausleihen': 'borrowed',
+            'einpacken': 'packed'
+        };
+
+        let players = [];
+        let cur = 0;
+        let totalTurnCount = 0;
+        let count = 2;
+        let treasure = { r: 0, c: 0 };
+        let state = {};
+        let listening = false;
+        let isRecognitionActive = false; 
+        let active = null;
+        let currentSpokenText = "";
+
+        const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
+        if(recognition) {
+            recognition.lang = 'de-DE';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isRecognitionActive = true;
+            };
+
+            recognition.onresult = e => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = e.resultIndex; i < e.results.length; ++i) {
+                    if (e.results[i].isFinal) {
+                        finalTranscript += e.results[i][0].transcript;
+                    } else {
+                        interimTranscript += e.results[i][0].transcript;
+                    }
+                }
+
+                const currentBatch = finalTranscript || interimTranscript;
+                if (currentBatch) {
+                    currentSpokenText = currentBatch.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+                    document.getElementById('transcribed-text').innerText = currentBatch;
+                    document.getElementById('check-btn').disabled = false;
+                    document.getElementById('retry-btn').disabled = false;
+                    document.getElementById('feedback').innerText = "Listening... click Check when done.";
+                }
+            };
+            
+            recognition.onend = () => {
+                isRecognitionActive = false;
+                if(listening) {
+                    try { 
+                        recognition.start(); 
+                    } catch(e) {}
+                }
+            };
+        }
+
+        function setCount(n) {
+            count = n;
+            document.getElementById('btn-2').classList.toggle('active', n === 2);
+            document.getElementById('btn-3').classList.toggle('active', n === 3);
+            const fields = document.getElementById('name-fields');
+            fields.innerHTML = '';
+            for(let i=1; i<=n; i++) {
+                fields.innerHTML += `<div class="input-group"><label>Student ${i}</label><input type="text" id="n${i}" placeholder="Enter name..."></div>`;
+            }
+        }
+
+        function begin() {
+            players = [];
+            for(let i=1; i<=count; i++) {
+                players.push({ name: document.getElementById(`n${i}`).value || `Student ${i}`, id: i-1 });
+            }
+            document.getElementById('setup-screen').classList.add('hidden');
+            buildGrid();
+            updateUI();
+        }
+
+        function buildGrid() {
+            treasure = { r: Math.floor(Math.random()*8), c: Math.floor(Math.random()*6) };
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            pronouns.forEach((p, r) => {
+                const tr = document.createElement('tr');
+                const th = document.createElement('td');
+                th.className = 'row-head';
+                th.id = `row-head-${r}`;
+                th.innerHTML = `<span class="pronoun-label">${p.t}</span><span class="item-label">${p.i}</span>`;
+                tr.appendChild(th);
+
+                verbs.forEach((v, c) => {
+                    const id = `${r}-${c}`;
+                    state[id] = { tried: 0, dug: false, lockedUntilTurn: -1 };
+                    const td = document.createElement('td');
+                    td.id = `c-${id}`;
+                    td.onclick = () => tryDig(r, c);
+                    td.innerHTML = '<span style="opacity:0.2; font-size: 1.1rem;">⛏️</span>';
+                    tr.appendChild(td);
+                });
+                board.appendChild(tr);
+            });
+        }
+
+        function getTarget(r, c) {
+            const p = pronouns[r];
+            const v = verbs[c];
+            let aux = 'hat';
+            if(p.t === 'Ich') aux = 'habe';
+            else if(p.t === 'Du') aux = 'hast';
+            else if(['Wir', 'Sie (they)'].includes(p.t)) aux = 'haben';
+            else if(p.t === 'Ihr') aux = 'habt';
+            return `${p.t.split(' ')[0]} ${aux} ${p.i} ${v.p}`.toLowerCase();
+        }
+
+        function getEnglishTarget(r, c) {
+            const p = pronouns[r];
+            const v = verbs[c];
+            const engP = englishPronouns[p.t];
+            const engI = englishItems[p.i];
+            const engV = englishVerbs[v.inf];
+            
+            let aux = 'have';
+            if(['Er', 'Sie', 'Es'].includes(p.t)) aux = 'has';
+
+            return `${engP} ${aux} ${engV} ${engI}`;
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('td, th').forEach(el => {
+                el.classList.remove('active-selection', 'header-highlight');
+            });
+        }
+
+        function tryDig(r, c) {
+            const id = `${r}-${c}`;
+            if(state[id].dug || state[id].lockedUntilTurn > totalTurnCount) return;
+            
+            if(listening) stopMic();
+            clearHighlights();
+
+            active = { r, c, id };
+            
+            document.getElementById(`c-${id}`).classList.add('active-selection');
+            document.getElementById(`row-head-${r}`).classList.add('header-highlight');
+            document.getElementById(`verb-${c}`).classList.add('header-highlight');
+
+            document.getElementById('transcribed-text').innerText = "...";
+            document.getElementById('check-btn').disabled = true;
+            document.getElementById('retry-btn').disabled = true;
+            currentSpokenText = "";
+
+            // Show English instruction with "Translate"
+            const englishSentence = getEnglishTarget(r, c);
+            document.getElementById('instruction').innerText = `Translate: "${englishSentence}"`;
+            document.getElementById('feedback').innerText = "Recording... speak clearly.";
+            startMic();
+        }
+
+        function retryRecording() {
+            if(!active) return;
+            if(listening) stopMic();
+            
+            setTimeout(() => {
+                document.getElementById('transcribed-text').innerText = "...";
+                document.getElementById('check-btn').disabled = true;
+                currentSpokenText = "";
+                document.getElementById('feedback').innerText = "Re-recording... speak clearly.";
+                startMic();
+            }, 100);
+        }
+
+        function startMic() {
+            if(!recognition) { alert("Speech recognition not supported in this browser."); return; }
+            listening = true;
+            document.getElementById('mic-box').classList.add('listening');
+            document.getElementById('mic-svg').innerHTML = '<rect x="6" y="6" width="12" height="12" fill="currentColor"></rect>';
+            
+            if (!isRecognitionActive) {
+                try {
+                    recognition.start();
+                } catch(e) {}
+            }
+        }
+
+        function stopMic() {
+            listening = false; 
+            document.getElementById('mic-box').classList.remove('listening');
+            document.getElementById('mic-svg').innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
+            
+            if (isRecognitionActive) {
+                recognition.stop();
+            }
+        }
+
+        function toggleMicManually() {
+            if (!active) return;
+            if (listening) {
+                stopMic();
+                document.getElementById('feedback').innerText = "Paused. Check the text box and hit 'Check' or 'Retry'.";
+            } else {
+                startMic();
+                document.getElementById('feedback').innerText = "Recording resumed...";
+            }
+        }
+
+        function getFeedbackHTML(target, spoken) {
+            const targetWords = target.split(' ');
+            const spokenWords = spoken.split(' ');
+            
+            return targetWords.map(word => {
+                if (!spokenWords.includes(word)) {
+                    return `<span style="color:var(--error-red); text-decoration:underline;">${word}</span>`;
+                }
+                return word;
+            }).join(' ');
+        }
+
+        function checkSentence() {
+            if(!active) return;
+            if (listening) stopMic();
+
+            const v = verbs[active.c];
+            const target = getTarget(active.r, active.c);
+            const id = active.id;
+            const el = document.getElementById(`c-${id}`);
+            const spoken = currentSpokenText;
+
+            const targetHasEI = target.includes('ei');
+            const targetHasIE = target.includes('ie');
+            const spokenHasEI = spoken.includes('ei');
+            const spokenHasIE = spoken.includes('ie');
+
+            let vowelError = false;
+            if ((targetHasEI && spokenHasIE) || (targetHasIE && spokenHasEI)) {
+                vowelError = true;
+            }
+
+            const participleCorrect = spoken.includes(v.p);
+
+            const keyWords = target.split(' ');
+            let matchCount = 0;
+            keyWords.forEach(kw => {
+                if (spoken.includes(kw)) matchCount++;
+            });
+            
+            const basicMatch = (matchCount / keyWords.length >= 0.75) && participleCorrect;
+
+            if (basicMatch && !vowelError) {
+                const isTreasure = (active.r === treasure.r && active.c === treasure.c);
+                mark(id, true, false, isTreasure);
+                
+                if(isTreasure) {
+                    el.classList.add('treasure');
+                    el.innerHTML = '💎';
+                    document.getElementById('win-msg').innerText = `${players[cur].name} Found It!`;
+                    setTimeout(() => document.getElementById('win-modal').style.display='flex', 800);
+                } else {
+                    document.getElementById('feedback').innerHTML = `<span style="color:var(--secondary); font-weight:bold;">Gut gemacht!</span> Correct grammar. No treasure here.`;
+                    clearHighlights();
+                    rotate();
+                }
+            } else {
+                state[id].tried++;
+                
+                let errorTypeMsg = "WRONG!";
+                if (vowelError) {
+                    errorTypeMsg = "Watch your pronunciation!";
+                } else if (!participleCorrect) {
+                    errorTypeMsg = "Check your participle!";
+                }
+
+                const correctionHTML = getFeedbackHTML(target, spoken);
+
+                if(state[id].tried < 2) {
+                    const hint = vowelError ? "<br><small>Remember: 'ei' sounds like 'eye', 'ie' sounds like 'ee'.</small>" : "";
+                    document.getElementById('feedback').innerHTML = `<span style="color:var(--error-red); font-weight:bold;">${errorTypeMsg}</span> Correct words: <span style="font-weight:bold; color:var(--primary);">${correctionHTML}</span>. (1 attempt left)${hint}`;
+                    document.getElementById('check-btn').disabled = true;
+                    document.getElementById('retry-btn').disabled = true;
+                    el.classList.add('shake');
+                    setTimeout(() => el.classList.remove('shake'), 500);
+                } else {
+                    state[id].lockedUntilTurn = totalTurnCount + players.length; 
+                    mark(id, false, true);
+                    document.getElementById('feedback').innerHTML = `<span style="color:var(--error-red); font-weight:bold;">WRONG!</span> The correct answer was: <span style="font-weight:bold; color:var(--primary);">${correctionHTML}</span>. Square is locked for a round!`;
+                    clearHighlights();
+                    rotate();
+                }
+            }
+        }
+
+        function mark(id, win, lockedFlag = false, isTreasure = false) {
+            const el = document.getElementById(`c-${id}`);
+            if (win) {
+                state[id].dug = true;
+                el.className = `dug player-${players[cur].id}`;
+                if (!isTreasure) {
+                    el.innerHTML = `<span style="font-size:1.2rem; opacity:0.4; font-weight:bold;">X</span>`;
+                }
+            } else if (lockedFlag) {
+                el.classList.add('locked');
+                el.innerHTML = `<span style="font-size:1.1rem; opacity:0.2;">🔒</span>`;
+            }
+        }
+
+        function rotate() {
+            totalTurnCount++;
+            cur = (cur + 1) % players.length;
+            
+            Object.keys(state).forEach(id => {
+                if (state[id].lockedUntilTurn <= totalTurnCount && !state[id].dug) {
+                    const el = document.getElementById(`c-${id}`);
+                    if (el.classList.contains('locked')) {
+                        el.classList.remove('locked');
+                        el.innerHTML = '<span style="opacity:0.2; font-size: 1.1rem;">⛏️</span>';
+                        state[id].tried = 0; 
+                    }
+                }
+            });
+
+            setTimeout(updateUI, 3500);
+        }
+
+        function updateUI() {
+            const p = players[cur];
+            const disp = document.getElementById('turn-display');
+            const nameEl = document.getElementById('p-name');
+            
+            disp.style.borderBottomColor = p.id === 0 ? 'var(--primary)' : (p.id === 1 ? 'var(--secondary)' : 'var(--tertiary)');
+            nameEl.innerText = p.name;
+            nameEl.className = `player-${p.id}-text`;
+            
+            document.getElementById('instruction').innerText = "Pick a square to dig";
+            document.getElementById('transcribed-text').innerText = "...";
+            document.getElementById('check-btn').disabled = true;
+            document.getElementById('retry-btn').disabled = true;
+            if (!document.getElementById('feedback').innerHTML.includes('Correct words') && !document.getElementById('feedback').innerHTML.includes('The correct answer was')) {
+                 document.getElementById('feedback').innerText = "Waiting for student...";
+            }
+            active = null;
+        }
+
+        window.onload = () => setCount(2);
+    </script>
+</body>
+</html>
