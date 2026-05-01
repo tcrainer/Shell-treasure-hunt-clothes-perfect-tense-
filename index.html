@@ -52,7 +52,6 @@
             margin: 0;
         }
 
-        /* Setup Screen */
         #setup-screen {
             position: fixed;
             inset: 0;
@@ -122,7 +121,6 @@
             box-shadow: 0 8px 12px -3px rgba(67, 56, 202, 0.2);
         }
 
-        /* Top Bar Info */
         .game-info {
             display: grid;
             grid-template-columns: 2.5fr 1fr;
@@ -176,7 +174,7 @@
             align-items: center;
         }
 
-        #transcribed-text {
+        #transcribed-input {
             flex-grow: 1;
             padding: 5px 10px;
             border: 1px solid var(--slate-200);
@@ -184,10 +182,14 @@
             font-size: 0.9rem;
             background: var(--slate-50);
             min-height: 32px;
-            display: flex;
-            align-items: center;
             font-weight: 500;
             color: var(--slate-900);
+            outline: none;
+            width: 100%;
+        }
+        #transcribed-input:focus {
+            border-color: var(--primary);
+            background: white;
         }
 
         .button-group {
@@ -219,7 +221,6 @@
         .btn-check:hover:not(:disabled) { background-color: #047857; }
         .btn-check:disabled { background-color: var(--slate-200); cursor: not-allowed; }
 
-        /* Grid Table */
         .table-container { overflow-x: auto; padding-bottom: 5px; }
         table {
             width: 100%;
@@ -259,7 +260,6 @@
             line-height: 1.1;
         }
 
-        /* Highlight Styles */
         .active-selection {
             border-color: var(--highlight-border) !important;
             background-color: var(--highlight-bg) !important;
@@ -273,7 +273,6 @@
             transform: scale(1.03);
         }
 
-        /* Locked Tile Style */
         .locked {
             background-color: var(--slate-200) !important;
             border-color: var(--slate-400) !important;
@@ -281,7 +280,6 @@
             opacity: 0.6;
         }
 
-        /* Player Colours */
         .player-0 { border-color: var(--primary) !important; background-color: var(--primary-light) !important; }
         .player-1 { border-color: var(--secondary) !important; background-color: var(--secondary-light) !important; }
         .player-2 { border-color: var(--tertiary) !important; background-color: var(--tertiary-light) !important; }
@@ -290,7 +288,6 @@
         .player-1-text { color: var(--secondary); }
         .player-2-text { color: var(--tertiary); }
 
-        /* Animations */
         @keyframes pulse-red { 
             0% { background-color: #fee2e2; border: 2px solid #ef4444; } 
             100% { background-color: #fca5a5; border: 2px solid #b91c1c; } 
@@ -312,7 +309,6 @@
         }
         @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.1); } }
 
-        /* Modals */
         #win-modal {
             position: fixed;
             inset: 0;
@@ -337,7 +333,6 @@
 </head>
 <body>
 
-    <!-- Setup Screen -->
     <div id="setup-screen">
         <div class="setup-card">
             <h2>Game Setup</h2>
@@ -367,13 +362,13 @@
                 <div class="speech-interaction">
                     <div id="instruction" style="font-weight:900; font-size:0.95rem; color: var(--primary);">Pick a square to dig</div>
                     <div class="transcription-box">
-                        <div id="transcribed-text">...</div>
+                        <input type="text" id="transcribed-input" placeholder="Speak or type your answer here..." autocomplete="off">
                         <div class="button-group">
                             <button id="retry-btn" class="btn-retry" onclick="retryRecording()" disabled>Retry</button>
                             <button id="check-btn" class="btn-check" onclick="checkSentence()" disabled>Check</button>
                         </div>
                     </div>
-                    <div id="feedback" style="font-size:0.75rem; color:var(--slate-500); font-style: italic;">Select a square to start recording.</div>
+                    <div id="feedback" style="font-size:0.75rem; color:var(--slate-500); font-style: italic;">Select a square to start recording or typing.</div>
                 </div>
             </div>
 
@@ -401,7 +396,6 @@
         </div>
     </div>
 
-    <!-- Win Modal -->
     <div id="win-modal">
         <div class="modal-card">
             <div style="font-size:3rem; margin-bottom:10px">💎</div>
@@ -432,37 +426,9 @@
             { inf: 'einpacken', p: 'eingepackt' }
         ];
 
-        // Maps for English translation
-        const englishPronouns = {
-            'Ich': 'I',
-            'Du': 'you',
-            'Er': 'he',
-            'Sie': 'she',
-            'Es': 'it',
-            'Wir': 'we',
-            'Ihr': 'you',
-            'Sie (they)': 'they'
-        };
-
-        const englishItems = {
-            'die Hose': 'the trousers',
-            'den Pullover': 'the jumper',
-            'den Anzug': 'the suit',
-            'den Rock': 'the skirt',
-            'das Kleid': 'the dress',
-            'die Bluse': 'the blouse',
-            'die Schuhe': 'the shoes',
-            'das Hemd': 'the shirt'
-        };
-
-        const englishVerbs = {
-            'anhaben': 'worn',
-            'anziehen': 'put on',
-            'ausziehen': 'taken off',
-            'einkaufen': 'shopped for',
-            'ausleihen': 'borrowed',
-            'einpacken': 'packed'
-        };
+        const englishPronouns = { 'Ich': 'I', 'Du': 'you', 'Er': 'he', 'Sie': 'she', 'Es': 'it', 'Wir': 'we', 'Ihr': 'you', 'Sie (they)': 'they' };
+        const englishItems = { 'die Hose': 'the trousers', 'den Pullover': 'the jumper', 'den Anzug': 'the suit', 'den Rock': 'the skirt', 'das Kleid': 'the dress', 'die Bluse': 'the blouse', 'die Schuhe': 'the shoes', 'das Hemd': 'the shirt' };
+        const englishVerbs = { 'anhaben': 'worn', 'anziehen': 'put on', 'ausziehen': 'taken off', 'einkaufen': 'shopped for', 'ausleihen': 'borrowed', 'einpacken': 'packed' };
 
         let players = [];
         let cur = 0;
@@ -473,49 +439,41 @@
         let listening = false;
         let isRecognitionActive = false; 
         let active = null;
-        let currentSpokenText = "";
 
         const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
         if(recognition) {
             recognition.lang = 'de-DE';
             recognition.continuous = true;
             recognition.interimResults = true;
-
-            recognition.onstart = () => {
-                isRecognitionActive = true;
-            };
-
+            recognition.onstart = () => { isRecognitionActive = true; };
             recognition.onresult = e => {
                 let interimTranscript = '';
                 let finalTranscript = '';
-
                 for (let i = e.resultIndex; i < e.results.length; ++i) {
-                    if (e.results[i].isFinal) {
-                        finalTranscript += e.results[i][0].transcript;
-                    } else {
-                        interimTranscript += e.results[i][0].transcript;
-                    }
+                    if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
+                    else interimTranscript += e.results[i][0].transcript;
                 }
-
                 const currentBatch = finalTranscript || interimTranscript;
                 if (currentBatch) {
-                    currentSpokenText = currentBatch.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-                    document.getElementById('transcribed-text').innerText = currentBatch;
+                    document.getElementById('transcribed-input').value = currentBatch;
                     document.getElementById('check-btn').disabled = false;
                     document.getElementById('retry-btn').disabled = false;
-                    document.getElementById('feedback').innerText = "Listening... click Check when done.";
+                    document.getElementById('feedback').innerText = "Listening... click Check or edit text when done.";
                 }
             };
-            
             recognition.onend = () => {
                 isRecognitionActive = false;
-                if(listening) {
-                    try { 
-                        recognition.start(); 
-                    } catch(e) {}
-                }
+                if(listening) { try { recognition.start(); } catch(e) {} }
             };
         }
+
+        // Enable check button if user types manually
+        document.getElementById('transcribed-input').addEventListener('input', (e) => {
+            if (active) {
+                document.getElementById('check-btn').disabled = e.target.value.trim().length === 0;
+                document.getElementById('retry-btn').disabled = e.target.value.trim().length === 0;
+            }
+        });
 
         function setCount(n) {
             count = n;
@@ -523,16 +481,12 @@
             document.getElementById('btn-3').classList.toggle('active', n === 3);
             const fields = document.getElementById('name-fields');
             fields.innerHTML = '';
-            for(let i=1; i<=n; i++) {
-                fields.innerHTML += `<div class="input-group"><label>Student ${i}</label><input type="text" id="n${i}" placeholder="Enter name..."></div>`;
-            }
+            for(let i=1; i<=n; i++) fields.innerHTML += `<div class="input-group"><label>Student ${i}</label><input type="text" id="n${i}" placeholder="Enter name..."></div>`;
         }
 
         function begin() {
             players = [];
-            for(let i=1; i<=count; i++) {
-                players.push({ name: document.getElementById(`n${i}`).value || `Student ${i}`, id: i-1 });
-            }
+            for(let i=1; i<=count; i++) players.push({ name: document.getElementById(`n${i}`).value || `Student ${i}`, id: i-1 });
             document.getElementById('setup-screen').classList.add('hidden');
             buildGrid();
             updateUI();
@@ -549,7 +503,6 @@
                 th.id = `row-head-${r}`;
                 th.innerHTML = `<span class="pronoun-label">${p.t}</span><span class="item-label">${p.i}</span>`;
                 tr.appendChild(th);
-
                 verbs.forEach((v, c) => {
                     const id = `${r}-${c}`;
                     state[id] = { tried: 0, dug: false, lockedUntilTurn: -1 };
@@ -575,104 +528,90 @@
         }
 
         function getEnglishTarget(r, c) {
-            const p = pronouns[r];
-            const v = verbs[c];
-            const engP = englishPronouns[p.t];
-            const engI = englishItems[p.i];
-            const engV = englishVerbs[v.inf];
-            
-            let aux = 'have';
-            if(['Er', 'Sie', 'Es'].includes(p.t)) aux = 'has';
-
+            const p = pronouns[r], v = verbs[c];
+            const engP = englishPronouns[p.t], engI = englishItems[p.i], engV = englishVerbs[v.inf];
+            let aux = (['Er', 'Sie', 'Es'].includes(p.t)) ? 'has' : 'have';
             return `${engP} ${aux} ${engV} ${engI}`;
         }
 
+        /**
+         * Normalizes common German STT misrecognitions for beginners.
+         */
+        function normalizeInput(input) {
+            let s = input.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+            
+            // Phonetic fixes for STT errors
+            const maps = [
+                { from: /sieht\b/g, to: 'zieht' },
+                { from: /siehen\b/g, to: 'ziehen' },
+                { from: /angesieht\b/g, to: 'angezieht' }, // Common mistake catch
+                { from: /ausgesiehen\b/g, to: 'ausgezogen' }, // Lenient mapping for zieh/zieh errors
+                { from: /ausgesehen\b/g, to: 'ausgezogen' },
+                { from: /auf\b/g, to: 'aus' }, // If they meant "aus" but STT heard "auf"
+                { from: /aus\b/g, to: 'auf' }  // Vice versa
+            ];
+            
+            maps.forEach(m => { s = s.replace(m.from, m.to); });
+            return s;
+        }
+
         function clearHighlights() {
-            document.querySelectorAll('td, th').forEach(el => {
-                el.classList.remove('active-selection', 'header-highlight');
-            });
+            document.querySelectorAll('td, th').forEach(el => { el.classList.remove('active-selection', 'header-highlight'); });
         }
 
         function tryDig(r, c) {
             const id = `${r}-${c}`;
             if(state[id].dug || state[id].lockedUntilTurn > totalTurnCount) return;
-            
             if(listening) stopMic();
             clearHighlights();
-
             active = { r, c, id };
-            
             document.getElementById(`c-${id}`).classList.add('active-selection');
             document.getElementById(`row-head-${r}`).classList.add('header-highlight');
             document.getElementById(`verb-${c}`).classList.add('header-highlight');
-
-            document.getElementById('transcribed-text').innerText = "...";
+            document.getElementById('transcribed-input').value = "";
             document.getElementById('check-btn').disabled = true;
             document.getElementById('retry-btn').disabled = true;
-            currentSpokenText = "";
-
-            // Show English instruction with "Translate"
-            const englishSentence = getEnglishTarget(r, c);
-            document.getElementById('instruction').innerText = `Translate: "${englishSentence}"`;
-            document.getElementById('feedback').innerText = "Recording... speak clearly.";
+            document.getElementById('instruction').innerText = `Translate: "${getEnglishTarget(r, c)}"`;
+            document.getElementById('feedback').innerText = "Recording... speak clearly or type below.";
             startMic();
         }
 
         function retryRecording() {
             if(!active) return;
             if(listening) stopMic();
-            
             setTimeout(() => {
-                document.getElementById('transcribed-text').innerText = "...";
+                document.getElementById('transcribed-input').value = "";
                 document.getElementById('check-btn').disabled = true;
-                currentSpokenText = "";
                 document.getElementById('feedback').innerText = "Re-recording... speak clearly.";
                 startMic();
             }, 100);
         }
 
         function startMic() {
-            if(!recognition) { alert("Speech recognition not supported in this browser."); return; }
+            if(!recognition) return;
             listening = true;
             document.getElementById('mic-box').classList.add('listening');
             document.getElementById('mic-svg').innerHTML = '<rect x="6" y="6" width="12" height="12" fill="currentColor"></rect>';
-            
-            if (!isRecognitionActive) {
-                try {
-                    recognition.start();
-                } catch(e) {}
-            }
+            if (!isRecognitionActive) { try { recognition.start(); } catch(e) {} }
         }
 
         function stopMic() {
             listening = false; 
             document.getElementById('mic-box').classList.remove('listening');
             document.getElementById('mic-svg').innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
-            
-            if (isRecognitionActive) {
-                recognition.stop();
-            }
+            if (isRecognitionActive) recognition.stop();
         }
 
         function toggleMicManually() {
             if (!active) return;
-            if (listening) {
-                stopMic();
-                document.getElementById('feedback').innerText = "Paused. Check the text box and hit 'Check' or 'Retry'.";
-            } else {
-                startMic();
-                document.getElementById('feedback').innerText = "Recording resumed...";
-            }
+            if (listening) { stopMic(); document.getElementById('feedback').innerText = "Paused. Check the text box and hit 'Check' or 'Retry'."; }
+            else { startMic(); document.getElementById('feedback').innerText = "Recording resumed..."; }
         }
 
         function getFeedbackHTML(target, spoken) {
-            const targetWords = target.split(' ');
-            const spokenWords = spoken.split(' ');
-            
+            const targetWords = target.split(' '), spokenWords = normalizeInput(spoken).split(' ');
             return targetWords.map(word => {
-                if (!spokenWords.includes(word)) {
-                    return `<span style="color:var(--error-red); text-decoration:underline;">${word}</span>`;
-                }
+                if (!spokenWords.includes(word)) return `<span style="color:var(--error-red); text-decoration:underline;">${word}</span>`;
                 return word;
             }).join(' ');
         }
@@ -680,37 +619,25 @@
         function checkSentence() {
             if(!active) return;
             if (listening) stopMic();
+            const v = verbs[active.c], target = getTarget(active.r, active.c);
+            const rawSpoken = document.getElementById('transcribed-input').value;
+            const spoken = normalizeInput(rawSpoken);
+            const id = active.id, el = document.getElementById(`c-${id}`);
 
-            const v = verbs[active.c];
-            const target = getTarget(active.r, active.c);
-            const id = active.id;
-            const el = document.getElementById(`c-${id}`);
-            const spoken = currentSpokenText;
-
-            const targetHasEI = target.includes('ei');
-            const targetHasIE = target.includes('ie');
-            const spokenHasEI = spoken.includes('ei');
-            const spokenHasIE = spoken.includes('ie');
-
-            let vowelError = false;
-            if ((targetHasEI && spokenHasIE) || (targetHasIE && spokenHasEI)) {
-                vowelError = true;
-            }
+            // Strict check for ei/ie
+            const targetHasEI = target.includes('ei'), targetHasIE = target.includes('ie');
+            const spokenHasEI = spoken.includes('ei'), spokenHasIE = spoken.includes('ie');
+            let vowelError = ((targetHasEI && spokenHasIE) || (targetHasIE && spokenHasEI));
 
             const participleCorrect = spoken.includes(v.p);
-
             const keyWords = target.split(' ');
             let matchCount = 0;
-            keyWords.forEach(kw => {
-                if (spoken.includes(kw)) matchCount++;
-            });
-            
+            keyWords.forEach(kw => { if (spoken.includes(kw)) matchCount++; });
             const basicMatch = (matchCount / keyWords.length >= 0.75) && participleCorrect;
 
             if (basicMatch && !vowelError) {
                 const isTreasure = (active.r === treasure.r && active.c === treasure.c);
                 mark(id, true, false, isTreasure);
-                
                 if(isTreasure) {
                     el.classList.add('treasure');
                     el.innerHTML = '💎';
@@ -723,27 +650,20 @@
                 }
             } else {
                 state[id].tried++;
-                
                 let errorTypeMsg = "WRONG!";
-                if (vowelError) {
-                    errorTypeMsg = "Watch your pronunciation!";
-                } else if (!participleCorrect) {
-                    errorTypeMsg = "Check your participle!";
-                }
-
-                const correctionHTML = getFeedbackHTML(target, spoken);
+                if (vowelError) errorTypeMsg = "Watch your pronunciation (ei vs ie)!";
+                else if (!participleCorrect) errorTypeMsg = "Check your participle (ends in -t or -en)!";
+                const correctionHTML = getFeedbackHTML(target, rawSpoken);
 
                 if(state[id].tried < 2) {
-                    const hint = vowelError ? "<br><small>Remember: 'ei' sounds like 'eye', 'ie' sounds like 'ee'.</small>" : "";
-                    document.getElementById('feedback').innerHTML = `<span style="color:var(--error-red); font-weight:bold;">${errorTypeMsg}</span> Correct words: <span style="font-weight:bold; color:var(--primary);">${correctionHTML}</span>. (1 attempt left)${hint}`;
-                    document.getElementById('check-btn').disabled = true;
-                    document.getElementById('retry-btn').disabled = true;
+                    const hint = vowelError ? "<br><small>Remember: 'ei' (eye) vs 'ie' (ee).</small>" : "";
+                    document.getElementById('feedback').innerHTML = `<span style="color:var(--error-red); font-weight:bold;">${errorTypeMsg}</span> Correct: <span style="font-weight:bold; color:var(--primary);">${correctionHTML}</span>. (1 attempt left)${hint}`;
                     el.classList.add('shake');
                     setTimeout(() => el.classList.remove('shake'), 500);
                 } else {
                     state[id].lockedUntilTurn = totalTurnCount + players.length; 
                     mark(id, false, true);
-                    document.getElementById('feedback').innerHTML = `<span style="color:var(--error-red); font-weight:bold;">WRONG!</span> The correct answer was: <span style="font-weight:bold; color:var(--primary);">${correctionHTML}</span>. Square is locked for a round!`;
+                    document.getElementById('feedback').innerHTML = `<span style="color:var(--error-red); font-weight:bold;">WRONG!</span> Correct: <span style="font-weight:bold; color:var(--primary);">${correctionHTML}</span>. Tile locked!`;
                     clearHighlights();
                     rotate();
                 }
@@ -755,9 +675,7 @@
             if (win) {
                 state[id].dug = true;
                 el.className = `dug player-${players[cur].id}`;
-                if (!isTreasure) {
-                    el.innerHTML = `<span style="font-size:1.2rem; opacity:0.4; font-weight:bold;">X</span>`;
-                }
+                if (!isTreasure) el.innerHTML = `<span style="font-size:1.2rem; opacity:0.4; font-weight:bold;">X</span>`;
             } else if (lockedFlag) {
                 el.classList.add('locked');
                 el.innerHTML = `<span style="font-size:1.1rem; opacity:0.2;">🔒</span>`;
@@ -767,7 +685,6 @@
         function rotate() {
             totalTurnCount++;
             cur = (cur + 1) % players.length;
-            
             Object.keys(state).forEach(id => {
                 if (state[id].lockedUntilTurn <= totalTurnCount && !state[id].dug) {
                     const el = document.getElementById(`c-${id}`);
@@ -778,24 +695,20 @@
                     }
                 }
             });
-
             setTimeout(updateUI, 3500);
         }
 
         function updateUI() {
             const p = players[cur];
-            const disp = document.getElementById('turn-display');
-            const nameEl = document.getElementById('p-name');
-            
-            disp.style.borderBottomColor = p.id === 0 ? 'var(--primary)' : (p.id === 1 ? 'var(--secondary)' : 'var(--tertiary)');
+            const disp = document.getElementById('turn-display'), nameEl = document.getElementById('p-name');
+            disp.style.borderBottomColor = (p.id === 0) ? 'var(--primary)' : (p.id === 1 ? 'var(--secondary)' : 'var(--tertiary)');
             nameEl.innerText = p.name;
             nameEl.className = `player-${p.id}-text`;
-            
             document.getElementById('instruction').innerText = "Pick a square to dig";
-            document.getElementById('transcribed-text').innerText = "...";
+            document.getElementById('transcribed-input').value = "";
             document.getElementById('check-btn').disabled = true;
             document.getElementById('retry-btn').disabled = true;
-            if (!document.getElementById('feedback').innerHTML.includes('Correct words') && !document.getElementById('feedback').innerHTML.includes('The correct answer was')) {
+            if (!document.getElementById('feedback').innerHTML.includes('Correct words') && !document.getElementById('feedback').innerHTML.includes('Correct:')) {
                  document.getElementById('feedback').innerText = "Waiting for student...";
             }
             active = null;
